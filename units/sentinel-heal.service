@@ -1,0 +1,39 @@
+[Unit]
+Description=sentinel-heal probe/restart run
+Documentation=file:///usr/local/src/sentinel-heal/README.md
+After=network.target
+OnFailure=heal-alert@%n.service
+
+[Service]
+Type=oneshot
+ExecCondition=/usr/bin/test ! -e /etc/sentinel-heal/KILL
+ExecStart=/usr/local/sbin/sentinel-heal --run
+TimeoutStartSec=600
+RuntimeDirectory=sentinel-heal
+RuntimeDirectoryMode=0750
+RuntimeDirectoryPreserve=yes
+StateDirectory=sentinel-heal
+StateDirectoryMode=0755
+LogsDirectory=sentinel-heal
+LogsDirectoryMode=0750
+# hardening (root, must talk to pid 1 over D-Bus and open loopback + one HTTPS egress)
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictNamespaces=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+UMask=0027

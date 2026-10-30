@@ -1,0 +1,6 @@
+# /etc/sentinel-heal/notify.conf — copy by hand, root:root mode 0600. Never commit real values.
+# Absent (or NTFY_URL empty) = notify disabled, log-only. Values are never logged or printed.
+# NTFY_URL: full ntfy topic URL, e.g. https://<host>/<topic>
+# NTFY_TOKEN: optional; sent as "Authorization: Bearer <token>" when non-empty
+NTFY_URL=
+NTFY_TOKEN=

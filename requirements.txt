@@ -1,0 +1,4 @@
+# Runtime dependencies: None (uses Python 3.10+ standard library exclusively)
+
+# Development & test dependencies
+pytest>=7.0.0

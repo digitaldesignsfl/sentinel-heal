@@ -1,0 +1,14 @@
+[Unit]
+Description=sentinel-heal alert for %i
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/sentinel-heal --alert-unit %i
+TimeoutStartSec=60
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+LogsDirectory=sentinel-heal
+LogsDirectoryMode=0750
+ReadWritePaths=-/run/sentinel-heal
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
