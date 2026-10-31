@@ -1,7 +1,13 @@
-# sentinel-heal
+# sentinel-heal: self-healing watchdog for systemd services
 
-A lightweight, robust, probe-timer self-healing watchdog for systemd services with integrated [ntfy](https://ntfy.sh) alerting and zero external runtime dependencies (pure Python 3.10+ standard library).
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+[![systemd](https://img.shields.io/badge/init-systemd-orange.svg)](units)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
 
+**Automatically restart hung or unhealthy Linux services.** sentinel-heal is a lightweight, probe-based self-healing watchdog for systemd services, with HTTP health checks, restart rate limits, and [ntfy](https://ntfy.sh) push alerts. Zero external runtime dependencies (pure Python 3.10+ standard library).
+
+Use it on a VPS, home server, or homelab to catch the failures systemd's `Restart=always` misses: deadlocked processes, frozen event loops, and endpoints stuck returning 5xx.
 ---
 
 ## Origin
@@ -36,6 +42,42 @@ Systemd's native `Restart=always` only reacts when a process **dies or crashes**
 - **External Restart Detection:** Tracks PID and InvocationID changes from external actions (`systemctl restart`), logging `EXTERNAL_RESTART` and resetting strikes.
 - **Audit Trails:** Append-only structured JSONL logging (`heal.jsonl`) + atomic state projection (`status.json`).
 - **Operational Controls:** Instant runtime pause (`touch /run/sentinel-heal/pause`) or permanent killswitch (`touch /etc/sentinel-heal/KILL`).
+
+---
+
+## Use Cases
+
+- Auto-restart a web API, reverse proxy (nginx, Caddy), or self-hosted app when its health check stops responding.
+- Keep a single VPS or homelab box running unattended, with a phone alert every time it heals something.
+- Add HTTP health-check auto-healing to services that have no built-in watchdog support (`sd_notify` / `WatchdogSec`).
+- Prevent restart storms on a permanently broken service with hourly and daily caps.
+
+---
+
+## How It Compares
+
+| Tool | Detects crash | Detects hang / 5xx | Restart caps | Push alerts | Extra dependencies |
+|---|---|---|---|---|---|
+| systemd `Restart=always` | Yes | No | Partial (`StartLimit*`) | No | None |
+| systemd `WatchdogSec` | Yes | Only if the app calls `sd_notify` | Partial | No | App code changes |
+| Monit | Yes | Yes | Yes | Email or scripts | Separate daemon |
+| **sentinel-heal** | Yes (via drop-ins) | **Yes, HTTP probes** | **Yes, hourly + daily** | **ntfy** | **None (Python stdlib)** |
+
+---
+
+## FAQ
+
+**How do I automatically restart a hung systemd service?**
+Point a sentinel-heal target at the service's loopback health URL. After the configured number of failed probes (strikes), it restarts the unit, verifies recovery, and alerts you.
+
+**Is it safe to run on a production server?**
+It installs in dry-run mode, logging what it would do without restarting anything. Live restarts stay blocked until a notification channel is configured, and restart caps stop runaway loops.
+
+**Does it need Docker, Kubernetes, or pip packages?**
+No. It is a single Python file using only the standard library, driven by a systemd timer.
+
+**Can I pause it during maintenance?**
+Yes. Touch a pause file, list maintenance units in `hold_units`, or use the killswitch. See the Operations Cheat Sheet.
 
 ---
 
